@@ -7,4 +7,5 @@
 A web  service for checking  websites on the  Internet  for  basic  SEO  suitability.
 
 Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https://page-analyzer-uiqi.onrender.com)
+
 ***Notice**: the project uses a free hosting plan, the request can take up to 50 seconds.*
