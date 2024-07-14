@@ -5,4 +5,8 @@ dev:
 lint:
 	poetry run flake8 page_analyzer
 
-.PHONY: install dev lint
+PORT ?= 8000
+start:
+	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
+
+.PHONY: install dev lint start
