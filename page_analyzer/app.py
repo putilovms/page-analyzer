@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for
 import os
 from dotenv import load_dotenv
 import logging
+import psycopg2
 
 custom_time_format = '%Y-%m-%d %H:%M:%S'
 logging.basicConfig(
@@ -12,9 +13,14 @@ logging.basicConfig(
     datefmt=custom_time_format
 )
 
+
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL)
+logging.debug(f"Коннект к БД: {conn}")
 
 
 @app.route('/')
