@@ -7,16 +7,9 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-keepalive_kwargs = {
-    "keepalives": 1,
-    "keepalives_idle": 60,
-    "keepalives_interval": 10,
-    "keepalives_count": 5
-}
-
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL, **keepalive_kwargs)
+conn = psycopg2.connect(DATABASE_URL)
 
 
 def get_site(id: int) -> dict:
@@ -39,8 +32,8 @@ def get_site_id(site_name: str) -> Optional[int]:
 
 def add_site(site_name: str) -> int:
     with conn.cursor() as cursor:
-        query = "INSERT INTO urls (name, created_at) \
-            VALUES(%s, NOW()) RETURNING id"
+        query = '''INSERT INTO urls (name, created_at)
+            VALUES (% s, NOW()) RETURNING id'''
         cursor.execute(query, (site_name,))
         conn.commit()
         id = cursor.fetchone()[0]

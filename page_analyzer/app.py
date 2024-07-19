@@ -1,5 +1,6 @@
 import logging
 import os
+import validators
 from flask import Flask, render_template, request, flash
 from flask import get_flashed_messages, redirect, url_for
 from dotenv import load_dotenv
@@ -13,6 +14,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
+def validate(site_name: str) -> tuple:
+    if len(site_name) > 255:
+        return ('URL превышает 255 символов', 'alert-danger')
+    if not validators.url(site_name):
+        return ('Некорректный URL', 'alert-danger')
+    return ()
+
+
 @app.route('/')
 def home_page() -> str:
     return render_template('index.html')
@@ -21,10 +30,11 @@ def home_page() -> str:
 @app.post('/urls')
 def add_url() -> str:
     site_name = request.form.get('url', '', str)
-    if not website.is_valid(site_name):
-        flash('Некорректный URL', 'alert-danger')
-        # Тут в примере не спрашивает про повторную отправку формы
+    error = validate(site_name)
+    if error:
+        flash(*error)
         messages = get_flashed_messages(with_categories=True)
+        # В примере не спрашивает про повторную отправку формы
         return render_template(
             'index.html',
             messages=messages,

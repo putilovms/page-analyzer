@@ -1,24 +1,16 @@
 import logging
 import urllib.parse
-import validators
 from typing import Optional
 
 log = logging.getLogger(__name__)
 
 
-def is_valid(site_name: str) -> bool:
-    if len(site_name) > 255:
-        return False
-    if not validators.url(site_name):
-        return False
-    return True
-
-
 def normalize(site_name: str) -> str:
     site_name = site_name.lower()
     url = urllib.parse.urlparse(site_name)
-    url = url.scheme + '://' + url.hostname
-    return url
+    parts = [url.scheme, url.hostname, '', '', '', '']
+    new_url = urllib.parse.urlunparse(parts)
+    return new_url
 
 
 def get_site(id: int, source) -> dict:
