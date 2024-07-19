@@ -4,8 +4,8 @@ import logging
 custom_time_format = '%H:%M'
 logging.basicConfig(
     level=logging.DEBUG,
-    filename="page_analyzer.log",
-    filemode="w",
+    # filename="page_analyzer.log",
+    # filemode="w",
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
     datefmt=custom_time_format
 )
