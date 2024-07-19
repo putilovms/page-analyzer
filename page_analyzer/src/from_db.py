@@ -32,7 +32,7 @@ def get_site_id(site_name: str) -> Optional[int]:
 
 def add_site(site_name: str) -> int:
     with conn.cursor() as cursor:
-        query = "INSERT INTO urls \
+        query = "INSERT INTO urls (name, created_at) \
             VALUES(%s, NOW()) RETURNING id"
         cursor.execute(query, (site_name,))
         conn.commit()
