@@ -1,9 +1,9 @@
 import logging
 import os
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import NamedTupleCursor
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, Any
 
 log = logging.getLogger(__name__)
 
@@ -12,12 +12,11 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 
 
-def get_site(id: int) -> dict:
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
+def get_site(id: int) -> Any:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         query = "SELECT * FROM urls WHERE id=%s"
         cursor.execute(query, (id,))
         site = cursor.fetchone()
-        site = {} if site is None else dict(site)
     return site
 
 
@@ -33,7 +32,7 @@ def get_site_id(site_name: str) -> Optional[int]:
 def add_site(site_name: str) -> int:
     with conn.cursor() as cursor:
         query = '''INSERT INTO urls (name, created_at)
-            VALUES (% s, NOW()) RETURNING id'''
+            VALUES (%s, NOW()) RETURNING id'''
         cursor.execute(query, (site_name,))
         conn.commit()
         id = cursor.fetchone()[0]
@@ -41,11 +40,8 @@ def add_site(site_name: str) -> int:
 
 
 def get_all_site() -> list:
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         query = "SELECT * FROM urls"
         cursor.execute(query)
         sites = cursor.fetchall()
-        result = []
-        if sites is not None:
-            result = list(map(dict, sites))
-    return result
+    return sites

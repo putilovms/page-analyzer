@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 def normalize(site_name: str) -> str:
     site_name = site_name.lower()
     url = urllib.parse.urlparse(site_name)
-    parts = [url.scheme, url.hostname, '', '', '', '']
+    parts = (url.scheme, url.hostname, '', '', '', '')
     new_url = urllib.parse.urlunparse(parts)
     return new_url
 
