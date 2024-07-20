@@ -39,9 +39,10 @@ def add_site(site_name: str) -> int:
     return id
 
 
-def get_all_site() -> list:
+def get_all_site(sorting_asc: bool = False) -> list:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
-        query = "SELECT * FROM urls"
+        sort = 'ASC' if sorting_asc else 'DESC'
+        query = f"SELECT * FROM urls ORDER BY created_at {sort}"
         cursor.execute(query)
         sites = cursor.fetchall()
     return sites
