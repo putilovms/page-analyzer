@@ -82,7 +82,7 @@ def check_site(site_id: int) -> None:
 def get_checks(url_id: int, sorting_asc: bool = False) -> list:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         sort = 'ASC' if sorting_asc else 'DESC'
-        query = f'''SELECT * FROM url_checks 
+        query = f'''SELECT * FROM url_checks
             WHERE url_id=%s
             ORDER BY created_at {sort}'''
         cursor.execute(query, (url_id,))
