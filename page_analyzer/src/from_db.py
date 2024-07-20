@@ -16,11 +16,12 @@ def get_site(id: int) -> Any:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         query = "SELECT * FROM urls WHERE id=%s"
         cursor.execute(query, (id,))
-        site = cursor.fetchone()
+        site = cursor.fetchmany(1)
+        site = site[0] if site else None
     return site
 
 
-def get_site_id(site_name: str) -> Optional[int]:
+def get_id_site(site_name: str) -> Optional[int]:
     with conn.cursor() as cursor:
         query = "SELECT id FROM urls WHERE name LIKE %s"
         cursor.execute(query, (site_name,))
@@ -39,10 +40,51 @@ def add_site(site_name: str) -> int:
     return id
 
 
-def get_all_site(sorting_asc: bool = False) -> list:
+def get_all_sites(sorting_asc: bool = False) -> list:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         sort = 'ASC' if sorting_asc else 'DESC'
-        query = f"SELECT * FROM urls ORDER BY created_at {sort}"
+        # query = f"SELECT * FROM urls ORDER BY created_at {sort}"
+        query = f'''SELECT
+                urls.id as id,
+                urls.name as name,
+                url_checks.status_code as status_code,
+                url_checks.created_at as url_checks_created_at
+            FROM
+                urls
+            INNER JOIN url_checks ON
+                urls.id = url_checks.url_id
+            WHERE
+                url_checks.created_at in
+            (
+                SELECT
+                    max(created_at) as created_at
+                FROM
+                    url_checks
+                GROUP BY
+                    url_id
+            )
+            ORDER BY urls.created_at {sort}'''
         cursor.execute(query)
         sites = cursor.fetchall()
     return sites
+
+
+def check_site(site_id: int) -> None:
+    with conn.cursor() as cursor:
+        query = '''INSERT INTO url_checks
+            (url_id, status_code, h1, title, description, created_at)
+            VALUES(%s, 0, '', '', '', NOW())'''
+        cursor.execute(query, (site_id,))
+        conn.commit()
+    return None
+
+
+def get_checks(url_id: int, sorting_asc: bool = False) -> list:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
+        sort = 'ASC' if sorting_asc else 'DESC'
+        query = f'''SELECT * FROM url_checks 
+            WHERE url_id=%s
+            ORDER BY created_at {sort}'''
+        cursor.execute(query, (url_id,))
+        checks = cursor.fetchall()
+    return checks

@@ -1,11 +1,12 @@
 import logging
 import os
 import validators
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, Response
 from flask import get_flashed_messages, redirect, url_for
 from dotenv import load_dotenv
 from .src import website
 from .src import from_db
+from typing import Union
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def home_page() -> str:
 
 
 @app.post('/urls')
-def add_url() -> str:
+def add_url() -> Union[str, Response]:
     site_name = request.form.get('url', '', str)
     error = validate(site_name)
     if error:
@@ -40,7 +41,7 @@ def add_url() -> str:
             messages=messages,
             site_name=site_name
         ), 422
-    id = website.get_site_id(site_name, from_db)
+    id = website.get_id_site(site_name, from_db)
     if id is None:
         id = website.add_site(site_name, from_db)
         flash('Страница успешно добавлена', 'alert-success')
@@ -52,18 +53,30 @@ def add_url() -> str:
 
 @app.get('/urls')
 def list_sites() -> str:
-    sites = website.get_all_site(from_db)
+    sites = website.get_all_sites(from_db)
     return render_template('list_sites.html', sites=sites)
 
 
-@app.get('/urls/<id>')
+@app.route('/urls/<id>')
 def site_page(id: str) -> str:
     site = website.get_site(int(id), from_db)
     if not site:
         return render_template('404.html'), 404
+    checks = website.get_checks(int(id), from_db)
     messages = get_flashed_messages(with_categories=True)
     return render_template(
         'site.html',
         messages=messages,
-        site=site
+        site=site,
+        checks=checks
     )
+
+
+@app.route('/urls/<id>/checks', methods=['GET', 'POST'])
+def site_checks(id: str) -> Union[str, Response]:
+    is_check = website.check_site(int(id), from_db)
+    if not is_check:
+        return render_template('404.html'), 404
+    flash('Страница успешно проверена', 'alert-success')
+    url = url_for('site_page', id=id)
+    return redirect(url, code=302)
