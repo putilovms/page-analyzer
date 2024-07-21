@@ -1,4 +1,4 @@
-# from .src import logger
+from .src import logger
 from .app import app
 
 
