@@ -69,12 +69,20 @@ def get_all_sites(sorting_asc: bool = False) -> list:
     return sites
 
 
-def check_site(site_id: int) -> None:
+def add_check_site(url_id: int, check_data: dict) -> None:
     with conn.cursor() as cursor:
         query = '''INSERT INTO url_checks
-            (url_id, status_code, h1, title, description, created_at)
-            VALUES(%s, 0, '', '', '', NOW())'''
-        cursor.execute(query, (site_id,))
+                (url_id, status_code, h1, title, description, created_at)
+            VALUES
+                (%s, %s, %s, %s, %s, NOW())'''
+        data = (
+            url_id,
+            check_data['status_code'],
+            check_data['h1'],
+            check_data['title'],
+            check_data['description']
+        )
+        cursor.execute(query, data)
         conn.commit()
     return None
 

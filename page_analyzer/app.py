@@ -72,11 +72,16 @@ def site_page(id: str) -> str:
     )
 
 
-@app.route('/urls/<id>/checks', methods=['GET', 'POST'])
+# @app.route('/urls/<id>/checks', methods=['GET', 'POST'])
+@app.post('/urls/<id>/checks')
 def site_checks(id: str) -> Union[str, Response]:
-    is_check = website.check_site(int(id), from_db)
-    if not is_check:
+    site = website.get_site(int(id), from_db)
+    if not site:
         return render_template('404.html'), 404
-    flash('Страница успешно проверена', 'alert-success')
+    is_check = website.check_site(site, from_db)
+    if is_check:
+        flash('Страница успешно проверена', 'alert-success')
+    else:
+        flash('Произошла ошибка при проверке', 'alert-danger')
     url = url_for('site_page', id=id)
     return redirect(url, code=302)

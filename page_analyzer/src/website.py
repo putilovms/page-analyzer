@@ -1,6 +1,7 @@
 import logging
 import urllib.parse
 from typing import Optional, Any
+from requests import get, RequestException
 
 log = logging.getLogger(__name__)
 
@@ -39,13 +40,26 @@ def get_all_sites(source: Any) -> list:
     return sites
 
 
-def check_site(site_id: int, source: Any) -> bool:
-    site = source.get_site(site_id)
-    if not site:
+def check_site(site: Any, source: Any) -> bool:
+    try:
+        check_data = get_check_data(site)
+        log.debug(f'Данные проверки: {check_data}')
+    except RequestException:
         return False
-    source.check_site(site_id)
-    log.debug(f'Проверка для ID = {site_id}')
+    source.add_check_site(site.id, check_data)
+    log.debug(f'Добавлена проверка для ID = {site.id}')
     return True
+
+
+def get_check_data(site: Any) -> dict:
+    check_data = {}
+    r = get(site.name)
+    r.raise_for_status()
+    check_data['status_code'] = r.status_code
+    check_data['h1'] = ''
+    check_data['title'] = ''
+    check_data['description'] = ''
+    return check_data
 
 
 def get_checks(url_id: int, source: Any) -> list:
