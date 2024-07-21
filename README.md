@@ -5,8 +5,18 @@
 # Page Analyzer
 *Educational project*
 
-A web  service for checking  websites on the  Internet  for  basic  SEO  suitability.
+A service that checks the presence of the main elements of SEO optimization on the monitored site and their content.
 
 Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https://page-analyzer-uiqi.onrender.com)
 
 ***Notice**: the project uses a free hosting plan, the request can take up to 50 seconds.*
+
+## Installation
+
+1. Requires Python version 3.10 or higher and Poetry
+2. Clone the project: `>> git clone https://github.com/putilovms/python-project-83.git`
+3. Create an `.env` file in the root of the project and add the following variables to it:
+* `SECRET_KEY={any_key}` - the secret key
+* `DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}` - access to the PostgreSQL database
+4. Build the project using the command: `>> make build`
+5. Starting the server: `>> make start`

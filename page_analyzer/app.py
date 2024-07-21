@@ -73,7 +73,6 @@ def site_page(id: str) -> str:
     )
 
 
-# @app.route('/urls/<id>/checks', methods=['GET', 'POST'])
 @app.post('/urls/<id>/checks')
 def site_checks(id: str) -> Union[str, Response]:
     site = website.get_site(int(id), from_db)
