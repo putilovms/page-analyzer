@@ -16,7 +16,7 @@ Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https:/
 1. Requires Python version 3.10 or higher and Poetry
 2. Clone the project: `>> git clone https://github.com/putilovms/python-project-83.git`
 3. Create an `.env` file in the root of the project and add the following variables to it:
-* `SECRET_KEY={any_key}` - the secret key
-* `DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}` - access to the PostgreSQL database
+    * `SECRET_KEY={any_key}` - the secret key
+    * `DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database_name}` - access to the PostgreSQL database
 4. Build the project using the command: `>> make build`
 5. Starting the server: `>> make start`
