@@ -1,7 +1,8 @@
 import logging
 import urllib.parse
 from typing import Optional, Any
-from requests import get, RequestException
+from requests import Response
+from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
@@ -40,25 +41,25 @@ def get_all_sites(source: Any) -> list:
     return sites
 
 
-def check_site(site: Any, source: Any) -> bool:
-    try:
-        check_data = get_check_data(site)
-        log.debug(f'Данные проверки: {check_data}')
-    except RequestException:
-        return False
-    source.add_check_site(site.id, check_data)
-    log.debug(f'Добавлена проверка для ID = {site.id}')
-    return True
+def check_site(id: int, response: Response, source: Any) -> None:
+    check_data = get_check_data(response)
+    log.debug(f'Данные проверки: {check_data}')
+    source.add_check_site(id, check_data)
+    log.debug(f'Добавлена проверка для ID = {id}')
+    return None
 
 
-def get_check_data(site: Any) -> dict:
+def get_check_data(response: Response) -> dict:
     check_data = {}
-    r = get(site.name)
-    r.raise_for_status()
-    check_data['status_code'] = r.status_code
-    check_data['h1'] = ''
-    check_data['title'] = ''
-    check_data['description'] = ''
+    check_data['status_code'] = response.status_code
+    soup = BeautifulSoup(response.content)
+    h1 = '' if soup.h1 is None else soup.h1.string
+    check_data['h1'] = h1
+    title = '' if soup.title is None else soup.title.string
+    check_data['title'] = title
+    description = soup.find('meta', attrs={"name": "description"})
+    description = '' if description is None else description.attrs['content']
+    check_data['description'] = description
     return check_data
 
 

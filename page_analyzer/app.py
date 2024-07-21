@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from .src import website
 from .src import from_db
 from typing import Union
+from requests import get, RequestException
 
 log = logging.getLogger(__name__)
 
@@ -78,10 +79,13 @@ def site_checks(id: str) -> Union[str, Response]:
     site = website.get_site(int(id), from_db)
     if not site:
         return render_template('404.html'), 404
-    is_check = website.check_site(site, from_db)
-    if is_check:
-        flash('Страница успешно проверена', 'alert-success')
-    else:
+    try:
+        response = get(site.name)
+        response.raise_for_status()
+        website.check_site(int(id), response, from_db)
+    except RequestException:
         flash('Произошла ошибка при проверке', 'alert-danger')
+    else:
+        flash('Страница успешно проверена', 'alert-success')
     url = url_for('site_page', id=id)
     return redirect(url, code=302)
