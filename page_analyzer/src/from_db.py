@@ -2,45 +2,60 @@ import logging
 import os
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
+from psycopg2.extensions import connection
 from dotenv import load_dotenv
 from typing import Optional, Any
 
 log = logging.getLogger(__name__)
 
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
+
+def connect_to_db() -> connection:
+    load_dotenv()
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    return psycopg2.connect(DATABASE_URL)
+
+
+def close_connection(conn: connection) -> None:
+    conn.close()
+    return None
 
 
 def get_site(id: int) -> Any:
+    conn = connect_to_db()
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         query = "SELECT * FROM urls WHERE id=%s"
         cursor.execute(query, (id,))
         site = cursor.fetchmany(1)
         site = site[0] if site else None
+    close_connection(conn)
     return site
 
 
 def get_id_site(site_name: str) -> Optional[int]:
+    conn = connect_to_db()
     with conn.cursor() as cursor:
         query = "SELECT id FROM urls WHERE name LIKE %s"
         cursor.execute(query, (site_name,))
         id = cursor.fetchone()
         id = id if id is None else id[0]
+    close_connection(conn)
     return id
 
 
 def add_site(site_name: str) -> int:
+    conn = connect_to_db()
     with conn.cursor() as cursor:
         query = '''INSERT INTO urls (name, created_at)
             VALUES (%s, NOW()) RETURNING id'''
         cursor.execute(query, (site_name,))
         conn.commit()
         id = cursor.fetchone()[0]
+    close_connection(conn)
     return id
 
 
 def get_all_sites(sorting_asc: bool = False) -> list:
+    conn = connect_to_db()
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         sort = 'ASC' if sorting_asc else 'DESC'
         # query = f"SELECT * FROM urls ORDER BY created_at {sort}"
@@ -66,10 +81,12 @@ def get_all_sites(sorting_asc: bool = False) -> list:
             ORDER BY urls.created_at {sort}'''
         cursor.execute(query)
         sites = cursor.fetchall()
+    close_connection(conn)
     return sites
 
 
 def add_check_site(url_id: int, check_data: dict) -> None:
+    conn = connect_to_db()
     with conn.cursor() as cursor:
         query = '''INSERT INTO url_checks
                 (url_id, status_code, h1, title, description, created_at)
@@ -84,10 +101,12 @@ def add_check_site(url_id: int, check_data: dict) -> None:
         )
         cursor.execute(query, data)
         conn.commit()
+    close_connection(conn)
     return None
 
 
 def get_checks(url_id: int, sorting_asc: bool = False) -> list:
+    conn = connect_to_db()
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         sort = 'ASC' if sorting_asc else 'DESC'
         query = f'''SELECT * FROM url_checks
@@ -95,4 +114,5 @@ def get_checks(url_id: int, sorting_asc: bool = False) -> list:
             ORDER BY created_at {sort}'''
         cursor.execute(query, (url_id,))
         checks = cursor.fetchall()
+    close_connection(conn)
     return checks
