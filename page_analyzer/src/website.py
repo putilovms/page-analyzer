@@ -54,12 +54,12 @@ def get_check_data(response: Response) -> dict:
     check_data['status_code'] = response.status_code
     soup = BeautifulSoup(response.content)
     h1 = '' if soup.h1 is None else soup.h1.string
-    check_data['h1'] = h1
+    check_data['h1'] = h1[:255]
     title = '' if soup.title is None else soup.title.string
-    check_data['title'] = title
+    check_data['title'] = title[:255]
     description = soup.find('meta', attrs={"name": "description"})
     description = '' if description is None else description.attrs['content']
-    check_data['description'] = description
+    check_data['description'] = description[:255]
     return check_data
 
 
