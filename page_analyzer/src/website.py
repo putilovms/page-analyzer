@@ -33,32 +33,17 @@ def get_site(id: int) -> Any:
 
 
 def get_id_or_add(site_name: str) -> tuple:
-    conn = from_db.connect_to_db()
-    id = get_id_site(site_name, conn)
-    is_exists = True
-    if id is None:
-        id = add_site(site_name, conn)
-        is_exists = False
-    from_db.close_connection(conn)
-    return id, is_exists
-
-
-def get_id_site(site_name: str) -> int | None:
     site_name = normalize(site_name)
     conn = from_db.connect_to_db()
     id = from_db.get_id_site(site_name, conn)
-    from_db.close_connection(conn)
     log.debug(f'ID = {id}')
-    return id
-
-
-def add_site(site_name: str) -> int:
-    site_name = normalize(site_name)
-    conn = from_db.connect_to_db()
-    id = from_db.add_site(site_name, conn)
+    is_exists = True
+    if id is None:
+        is_exists = False
+        id = from_db.close_connection(conn)
+        log.debug(f'Сайт добавлен. ID = {id}')
     from_db.close_connection(conn)
-    log.debug(f'Сайт добавлен. ID = {id}')
-    return id
+    return id, is_exists
 
 
 def get_all_sites() -> list:

@@ -1,6 +1,5 @@
 import logging
 import os
-
 from flask import Flask, render_template, request, flash, Response
 from flask import get_flashed_messages, redirect, url_for
 from dotenv import load_dotenv
