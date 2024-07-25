@@ -1,7 +1,7 @@
 import logging
 import urllib.parse
 import validators
-from typing import Optional, Any
+from typing import Any
 from requests import Response
 from bs4 import BeautifulSoup
 from ..src import from_db
@@ -9,12 +9,11 @@ from ..src import from_db
 log = logging.getLogger(__name__)
 
 
-def validate(site_name: str) -> str:
+def validate(site_name: str) -> str | None:
     if len(site_name) > 255:
         return 'URL превышает 255 символов'
     if not validators.url(site_name):
         return 'Некорректный URL'
-    return ''
 
 
 def normalize(site_name: str) -> str:
@@ -26,36 +25,46 @@ def normalize(site_name: str) -> str:
 
 
 def get_site(id: int) -> Any:
-    site = from_db.get_site(id)
+    conn = from_db.connect_to_db()
+    site = from_db.get_site(id, conn)
+    from_db.close_connection(conn)
     log.debug(f'Данные сайта - {site}')
     return site
 
 
 def get_id_or_add(site_name: str) -> tuple:
-    id = get_id_site(site_name)
+    conn = from_db.connect_to_db()
+    id = get_id_site(site_name, conn)
     is_exists = True
     if id is None:
-        id = add_site(site_name)
+        id = add_site(site_name, conn)
         is_exists = False
+    from_db.close_connection(conn)
     return id, is_exists
 
 
-def get_id_site(site_name: str) -> Optional[int]:
+def get_id_site(site_name: str) -> int | None:
     site_name = normalize(site_name)
-    id = from_db.get_id_site(site_name)
+    conn = from_db.connect_to_db()
+    id = from_db.get_id_site(site_name, conn)
+    from_db.close_connection(conn)
     log.debug(f'ID = {id}')
     return id
 
 
 def add_site(site_name: str) -> int:
     site_name = normalize(site_name)
-    id = from_db.add_site(site_name)
+    conn = from_db.connect_to_db()
+    id = from_db.add_site(site_name, conn)
+    from_db.close_connection(conn)
     log.debug(f'Сайт добавлен. ID = {id}')
     return id
 
 
 def get_all_sites() -> list:
-    sites = from_db.get_all_sites()
+    conn = from_db.connect_to_db()
+    sites = from_db.get_all_sites(conn)
+    from_db.close_connection(conn)
     log.debug(f'Данные о сайтах получены: {sites}')
     return sites
 
@@ -63,9 +72,10 @@ def get_all_sites() -> list:
 def check_site(id: int, response: Response) -> None:
     check_data = get_check_data(response)
     log.debug(f'Данные проверки: {check_data}')
-    from_db.add_check_site(id, check_data)
+    conn = from_db.connect_to_db()
+    from_db.add_check_site(id, check_data, conn)
+    from_db.close_connection(conn)
     log.debug(f'Добавлена проверка для ID = {id}')
-    return None
 
 
 def get_check_data(response: Response) -> dict:
@@ -83,6 +93,8 @@ def get_check_data(response: Response) -> dict:
 
 
 def get_checks(url_id: int) -> list:
-    checks = from_db.get_checks(url_id)
+    conn = from_db.connect_to_db()
+    checks = from_db.get_checks(url_id, conn)
+    from_db.close_connection(conn)
     log.debug(f'Данные о проверках получены: {checks}')
     return checks
