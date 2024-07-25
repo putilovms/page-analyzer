@@ -4,8 +4,7 @@ from flask import Flask, render_template, request, flash, Response
 from flask import get_flashed_messages, redirect, url_for
 from dotenv import load_dotenv
 from .src import website
-from typing import Union
-from requests import get, RequestException
+from requests import RequestException
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ def home_page() -> str:
 
 
 @app.post('/urls')
-def add_url() -> Union[str, Response]:
+def add_url() -> str | Response:
     site_name = request.form.get('url', '', str)
     error = website.validate(site_name)
     if error:
@@ -49,10 +48,9 @@ def list_sites() -> str:
 
 @app.route('/urls/<id>')
 def site_page(id: str) -> str:
-    site = website.get_site(int(id))
+    site, checks = website.get_site_and_checks(int(id))
     if not site:
         return render_template('404.html'), 404
-    checks = website.get_checks(int(id))
     messages = get_flashed_messages(with_categories=True)
     return render_template(
         'site.html',
@@ -63,14 +61,11 @@ def site_page(id: str) -> str:
 
 
 @app.post('/urls/<id>/checks')
-def site_checks(id: str) -> Union[str, Response]:
-    site = website.get_site(int(id))
-    if not site:
-        return render_template('404.html'), 404
+def site_checks(id: str) -> str | Response:
     try:
-        response = get(site.name)
-        response.raise_for_status()
-        website.check_site(int(id), response)
+        site = website.check_site(int(id))
+        if not site:
+            return render_template('404.html'), 404
     except RequestException:
         flash('Произошла ошибка при проверке', 'alert-danger')
     else:

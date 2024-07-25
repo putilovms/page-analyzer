@@ -1,6 +1,7 @@
 import logging
 import urllib.parse
 import validators
+from requests import get
 from typing import Any
 from requests import Response
 from ..src import from_db
@@ -22,14 +23,6 @@ def normalize(site_name: str) -> str:
     parts = (url.scheme, url.hostname, '', '', '', '')
     new_url = urllib.parse.urlunparse(parts)
     return new_url
-
-
-def get_site(id: int) -> Any:
-    conn = from_db.connect_to_db()
-    site = from_db.get_site(id, conn)
-    from_db.close_connection(conn)
-    log.debug(f'Данные сайта - {site}')
-    return site
 
 
 def get_id_or_add(site_name: str) -> tuple:
@@ -54,13 +47,19 @@ def get_all_sites() -> list:
     return sites
 
 
-def check_site(id: int, response: Response) -> None:
-    check_data = get_check_data(response)
-    log.debug(f'Данные проверки: {check_data}')
+def check_site(id: int) -> Any:
     conn = from_db.connect_to_db()
-    from_db.add_check_site(id, check_data, conn)
+    site = from_db.get_site(id, conn)
+    log.debug(f'Данные сайта - {site}')
+    if site:
+        response = get(site.name)
+        response.raise_for_status()
+        check_data = get_check_data(response)
+        log.debug(f'Данные проверки: {check_data}')
+        from_db.add_check_site(id, check_data, conn)
+        log.debug(f'Добавлена проверка для ID = {id}')
     from_db.close_connection(conn)
-    log.debug(f'Добавлена проверка для ID = {id}')
+    return site
 
 
 def get_check_data(response: Response) -> dict:
@@ -73,9 +72,11 @@ def get_check_data(response: Response) -> dict:
     return check_data
 
 
-def get_checks(url_id: int) -> list:
+def get_site_and_checks(id: int) -> tuple:
     conn = from_db.connect_to_db()
-    checks = from_db.get_checks(url_id, conn)
-    from_db.close_connection(conn)
+    site = from_db.get_site(id, conn)
+    log.debug(f'Данные сайта - {site}')
+    checks = from_db.get_checks(id, conn)
     log.debug(f'Данные о проверках получены: {checks}')
-    return checks
+    from_db.close_connection(conn)
+    return site, checks
