@@ -3,8 +3,8 @@ import urllib.parse
 import validators
 from typing import Any
 from requests import Response
-from bs4 import BeautifulSoup
 from ..src import from_db
+from ..src import parser
 
 log = logging.getLogger(__name__)
 
@@ -66,14 +66,10 @@ def check_site(id: int, response: Response) -> None:
 def get_check_data(response: Response) -> dict:
     check_data = {}
     check_data['status_code'] = response.status_code
-    soup = BeautifulSoup(response.content)
-    h1 = '' if soup.h1 is None else soup.h1.string
-    check_data['h1'] = h1[:255]
-    title = '' if soup.title is None else soup.title.string
-    check_data['title'] = title[:255]
-    description = soup.find('meta', attrs={"name": "description"})
-    description = '' if description is None else description.attrs['content']
-    check_data['description'] = description[:255]
+    parse = parser.parsing_site(response.content)
+    check_data['h1'] = parser.get_h1(parse)
+    check_data['title'] = parser.get_title(parse)
+    check_data['description'] = parser.get_description(parse)
     return check_data
 
 
