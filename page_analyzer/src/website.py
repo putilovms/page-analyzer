@@ -40,8 +40,8 @@ def get_id_or_add(site_name: str) -> tuple:
     is_exists = True
     if id is None:
         is_exists = False
-        id = from_db.close_connection(conn)
-        log.debug(f'Сайт добавлен. ID = {id}')
+        id = from_db.add_site(site_name, conn)
+    log.debug(f'Сайт добавлен. ID = {id}')
     from_db.close_connection(conn)
     return id, is_exists
 
