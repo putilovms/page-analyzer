@@ -1,9 +1,7 @@
 import logging
-import os
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extensions import connection
-from dotenv import load_dotenv
 from typing import Any
 from ..config import app
 
@@ -67,20 +65,18 @@ def get_all_sites(conn: connection) -> list:
         #                 url_id
         #         ) or url_checks.created_at is Null
         #         ORDER BY urls.created_at DESC'''
-        query = "SELECT * FROM urls ORDER BY created_at DESC"
-        cursor.execute(query)
+        query_to_urls = "SELECT * FROM urls ORDER BY created_at DESC"
+        cursor.execute(query_to_urls)
         sites = cursor.fetchall()
-
-        query = '''SELECT DISTINCT ON (url_id)
+        query_to_url_checks = '''SELECT DISTINCT ON (url_id)
                     url_id,
                     status_code,
-                    created_at 
+                    created_at
                 FROM
                     url_checks
                 ORDER BY url_id, created_at DESC'''
-        cursor.execute(query)
+        cursor.execute(query_to_url_checks)
         cheks = cursor.fetchall()
-
         result = []
         for site in sites:
             record = {}
