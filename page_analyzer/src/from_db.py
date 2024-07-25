@@ -23,12 +23,11 @@ def get_site(id: int, conn: connection) -> Any:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
         query = "SELECT * FROM urls WHERE id=%s"
         cursor.execute(query, (id,))
-        site = cursor.fetchmany(1)
-        site = site[0] if site else None
+        site = cursor.fetchone()
     return site
 
 
-def get_id_site(site_name: str, conn: connection) -> int | None:
+def get_id_by_name(site_name: str, conn: connection) -> int | None:
     with conn.cursor() as cursor:
         query = "SELECT id FROM urls WHERE name LIKE %s"
         cursor.execute(query, (site_name,))

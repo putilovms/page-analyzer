@@ -35,7 +35,7 @@ def get_site(id: int) -> Any:
 def get_id_or_add(site_name: str) -> tuple:
     site_name = normalize(site_name)
     conn = from_db.connect_to_db()
-    id = from_db.get_id_site(site_name, conn)
+    id = from_db.get_id_by_name(site_name, conn)
     log.debug(f'ID = {id}')
     is_exists = True
     if id is None:
