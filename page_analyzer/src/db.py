@@ -88,6 +88,7 @@ def get_all_sites(conn: connection) -> list:
                 if site.id == check.url_id:
                     record['status_code'] = check.status_code
                     record['url_checks_created_at'] = check.created_at
+                    break
             result.append(record)
     return result
 
