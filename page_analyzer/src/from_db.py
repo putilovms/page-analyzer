@@ -60,25 +60,25 @@ def get_all_sites(sorting_asc: bool = False) -> list:
         sort = 'ASC' if sorting_asc else 'DESC'
         # query = f"SELECT * FROM urls ORDER BY created_at {sort}"
         query = f'''SELECT
-                urls.id as id,
-                urls.name as name,
-                url_checks.status_code as status_code,
-                url_checks.created_at as url_checks_created_at
-            FROM
-                urls
-            INNER JOIN url_checks ON
-                urls.id = url_checks.url_id
-            WHERE
-                url_checks.created_at in
-            (
-                SELECT
-                    max(created_at) as created_at
+                    urls.id as id,
+                    urls.name as name,
+                    url_checks.status_code as status_code,
+                    url_checks.created_at as url_checks_created_at
                 FROM
-                    url_checks
-                GROUP BY
-                    url_id
-            )
-            ORDER BY urls.created_at {sort}'''
+                    urls
+                LEFT JOIN url_checks ON
+                    urls.id = url_checks.url_id
+                WHERE
+                    url_checks.created_at in
+                (
+                    SELECT
+                        max(created_at) as created_at
+                    FROM
+                        url_checks
+                    GROUP BY
+                        url_id
+                ) or url_checks.created_at is Null
+                ORDER BY urls.created_at {sort}'''
         cursor.execute(query)
         sites = cursor.fetchall()
     close_connection(conn)
