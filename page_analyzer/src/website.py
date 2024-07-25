@@ -1,11 +1,20 @@
 import logging
 import urllib.parse
+import validators
 from typing import Optional, Any
 from requests import Response
 from bs4 import BeautifulSoup
 from ..src import from_db
 
 log = logging.getLogger(__name__)
+
+
+def validate(site_name: str) -> str:
+    if len(site_name) > 255:
+        return 'URL превышает 255 символов'
+    if not validators.url(site_name):
+        return 'Некорректный URL'
+    return ''
 
 
 def normalize(site_name: str) -> str:
@@ -20,6 +29,15 @@ def get_site(id: int) -> Any:
     site = from_db.get_site(id)
     log.debug(f'Данные сайта - {site}')
     return site
+
+
+def get_id_or_add(site_name: str) -> tuple:
+    id = get_id_site(site_name)
+    is_exists = True
+    if id is None:
+        id = add_site(site_name)
+        is_exists = False
+    return id, is_exists
 
 
 def get_id_site(site_name: str) -> Optional[int]:
