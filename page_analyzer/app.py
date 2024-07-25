@@ -1,17 +1,11 @@
 import logging
-import os
-from flask import Flask, render_template, request, flash, Response
+from flask import render_template, request, flash, Response
 from flask import get_flashed_messages, redirect, url_for
-from dotenv import load_dotenv
 from .src import website
 from requests import RequestException
+from .config import app
 
 log = logging.getLogger(__name__)
-
-load_dotenv()
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-# app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 
 
 @app.route('/')

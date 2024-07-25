@@ -5,14 +5,13 @@ from psycopg2.extras import NamedTupleCursor
 from psycopg2.extensions import connection
 from dotenv import load_dotenv
 from typing import Any
+from ..config import app
 
 log = logging.getLogger(__name__)
 
 
 def connect_to_db() -> connection:
-    load_dotenv()
-    DATABASE_URL = os.getenv('DATABASE_URL')
-    return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(app.config['DATABASE_URL'])
 
 
 def close_connection(conn: connection) -> None:
@@ -48,30 +47,53 @@ def add_site(site_name: str, conn: connection) -> int:
 
 def get_all_sites(conn: connection) -> list:
     with conn.cursor(cursor_factory=NamedTupleCursor) as cursor:
-        # query = f"SELECT * FROM urls ORDER BY created_at {sort}"
-        query = '''SELECT
-                    urls.id as id,
-                    urls.name as name,
-                    url_checks.status_code as status_code,
-                    url_checks.created_at as url_checks_created_at
-                FROM
-                    urls
-                LEFT JOIN url_checks ON
-                    urls.id = url_checks.url_id
-                WHERE
-                    url_checks.created_at in
-                (
-                    SELECT
-                        max(created_at) as created_at
-                    FROM
-                        url_checks
-                    GROUP BY
-                        url_id
-                ) or url_checks.created_at is Null
-                ORDER BY urls.created_at DESC'''
+        # query = '''SELECT
+        #             urls.id as id,
+        #             urls.name as name,
+        #             url_checks.status_code as status_code,
+        #             url_checks.created_at as url_checks_created_at
+        #         FROM
+        #             urls
+        #         LEFT JOIN url_checks ON
+        #             urls.id = url_checks.url_id
+        #         WHERE
+        #             url_checks.created_at in
+        #         (
+        #             SELECT
+        #                 max(created_at) as created_at
+        #             FROM
+        #                 url_checks
+        #             GROUP BY
+        #                 url_id
+        #         ) or url_checks.created_at is Null
+        #         ORDER BY urls.created_at DESC'''
+        query = "SELECT * FROM urls ORDER BY created_at DESC"
         cursor.execute(query)
         sites = cursor.fetchall()
-    return sites
+
+        query = '''SELECT DISTINCT ON (url_id)
+                    url_id,
+                    status_code,
+                    created_at 
+                FROM
+                    url_checks
+                ORDER BY url_id, created_at DESC'''
+        cursor.execute(query)
+        cheks = cursor.fetchall()
+
+        result = []
+        for site in sites:
+            record = {}
+            record['id'] = site.id
+            record['name'] = site.name
+            record['status_code'] = None
+            record['url_checks_created_at'] = None
+            for check in cheks:
+                if site.id == check.url_id:
+                    record['status_code'] = check.status_code
+                    record['url_checks_created_at'] = check.created_at
+            result.append(record)
+    return result
 
 
 def add_check_site(url_id: int, check_data: dict, conn: connection) -> None:
