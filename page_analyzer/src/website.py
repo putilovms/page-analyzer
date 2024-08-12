@@ -6,6 +6,7 @@ from typing import Any
 from requests import Response
 from . import db
 from ..src import parser
+import page_analyzer.constants as const
 
 log = logging.getLogger(__name__)
 
@@ -25,18 +26,18 @@ def normalize(site_name: str) -> str:
     return new_url
 
 
-def get_id_or_add(site_name: str) -> tuple:
+def add_new_site(site_name: str) -> tuple[int, bool]:
     site_name = normalize(site_name)
     conn = db.connect_to_db()
-    id = db.get_id_by_name(site_name, conn)
-    log.debug(f'ID = {id}')
-    is_exists = True
-    if id is None:
-        is_exists = False
+    site = db.get_site_by_name(site_name, conn)
+    log.debug(f'Сайт = {site}')
+    if site is None:
         id = db.add_site(site_name, conn)
-    log.debug(f'Сайт добавлен. ID = {id}')
+        log.debug(f'Сайт добавлен. ID = {id}')
+    else:
+        id = site.id
     db.close_connection(conn)
-    return id, is_exists
+    return id, site is not None
 
 
 def get_all_sites() -> list:
@@ -49,7 +50,7 @@ def get_all_sites() -> list:
 
 def check_site(id: int) -> Any:
     conn = db.connect_to_db()
-    site = db.get_site(id, conn)
+    site = db.get_site_by_id(id, conn)
     log.debug(f'Данные сайта - {site}')
     if site:
         response = get(site.name)
@@ -64,17 +65,15 @@ def check_site(id: int) -> Any:
 
 def get_check_data(response: Response) -> dict:
     check_data = {}
-    check_data['status_code'] = response.status_code
-    parse = parser.parsing_site(response.content)
-    check_data['h1'] = parser.get_h1(parse)
-    check_data['title'] = parser.get_title(parse)
-    check_data['description'] = parser.get_description(parse)
+    check_data[const.STATUS_CODE] = response.status_code
+    parsing_data = parser.parsing_site(response.content)
+    check_data.update(parsing_data)
     return check_data
 
 
 def get_site_and_checks(id: int) -> tuple:
     conn = db.connect_to_db()
-    site = db.get_site(id, conn)
+    site = db.get_site_by_id(id, conn)
     log.debug(f'Данные сайта - {site}')
     checks = db.get_checks(id, conn)
     log.debug(f'Данные о проверках получены: {checks}')

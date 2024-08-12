@@ -25,7 +25,7 @@ def add_url() -> str | Response:
             messages=messages,
             site_name=site_name
         ), 422
-    id, is_exists = website.get_id_or_add(site_name)
+    id, is_exists = website.add_new_site(site_name)
     if is_exists:
         flash('Страница уже существует', 'alert-info')
     else:
@@ -40,9 +40,9 @@ def list_sites() -> str:
     return render_template('list_sites.html', sites=sites)
 
 
-@app.route('/urls/<id>')
-def site_page(id: str) -> str:
-    site, checks = website.get_site_and_checks(int(id))
+@app.route('/urls/<int:id>')
+def site_page(id: int) -> str:
+    site, checks = website.get_site_and_checks(id)
     if not site:
         return render_template('404.html'), 404
     messages = get_flashed_messages(with_categories=True)
@@ -54,10 +54,10 @@ def site_page(id: str) -> str:
     )
 
 
-@app.post('/urls/<id>/checks')
-def site_checks(id: str) -> str | Response:
+@app.post('/urls/<int:id>/checks')
+def site_checks(id: int) -> str | Response:
     try:
-        site = website.check_site(int(id))
+        site = website.check_site(id)
         if not site:
             return render_template('404.html'), 404
     except RequestException:
@@ -66,3 +66,8 @@ def site_checks(id: str) -> str | Response:
         flash('Страница успешно проверена', 'alert-success')
     url = url_for('site_page', id=id)
     return redirect(url, code=302)
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
