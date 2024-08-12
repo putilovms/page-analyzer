@@ -2,12 +2,11 @@ import psycopg2
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extensions import connection
 from typing import Any
-from ..config import app
 import page_analyzer.constants as const
 
 
-def connect_to_db() -> connection:
-    return psycopg2.connect(app.config['DATABASE_URL'])
+def connect_to_db(dsn: str) -> connection:
+    return psycopg2.connect(dsn)
 
 
 def close_connection(conn: connection) -> None:

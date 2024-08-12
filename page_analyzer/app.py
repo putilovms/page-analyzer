@@ -1,11 +1,14 @@
-import logging
-from flask import render_template, request, flash, Response
+import os
+from flask import Flask, render_template, request, flash, Response
 from flask import get_flashed_messages, redirect, url_for
 from .src import website
 from requests import RequestException
-from .config import app
+from dotenv import load_dotenv
 
-log = logging.getLogger(__name__)
+load_dotenv()
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 
 
 @app.route('/')
@@ -25,7 +28,7 @@ def add_url() -> str | Response:
             messages=messages,
             site_name=site_name
         ), 422
-    id, is_exists = website.add_new_site(site_name)
+    id, is_exists = website.add_new_site(site_name, app.config['DATABASE_URL'])
     if is_exists:
         flash('Страница уже существует', 'alert-info')
     else:
@@ -36,13 +39,13 @@ def add_url() -> str | Response:
 
 @app.get('/urls')
 def list_sites() -> str:
-    sites = website.get_all_sites()
+    sites = website.get_all_sites(app.config['DATABASE_URL'])
     return render_template('list_sites.html', sites=sites)
 
 
 @app.route('/urls/<int:id>')
 def site_page(id: int) -> str:
-    site, checks = website.get_site_and_checks(id)
+    site, checks = website.get_site_and_checks(id, app.config['DATABASE_URL'])
     if not site:
         return render_template('404.html'), 404
     messages = get_flashed_messages(with_categories=True)
@@ -57,7 +60,7 @@ def site_page(id: int) -> str:
 @app.post('/urls/<int:id>/checks')
 def site_checks(id: int) -> str | Response:
     try:
-        site = website.check_site(id)
+        site = website.check_site(id, app.config['DATABASE_URL'])
         if not site:
             return render_template('404.html'), 404
     except RequestException:
@@ -69,5 +72,5 @@ def site_checks(id: int) -> str | Response:
 
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found(_):
     return render_template('404.html'), 404

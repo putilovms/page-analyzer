@@ -26,9 +26,9 @@ def normalize(site_name: str) -> str:
     return new_url
 
 
-def add_new_site(site_name: str) -> tuple[int, bool]:
+def add_new_site(site_name: str, dsn: str) -> tuple[int, bool]:
     site_name = normalize(site_name)
-    conn = db.connect_to_db()
+    conn = db.connect_to_db(dsn)
     site = db.get_site_by_name(site_name, conn)
     log.debug(f'Сайт = {site}')
     if site is None:
@@ -40,16 +40,16 @@ def add_new_site(site_name: str) -> tuple[int, bool]:
     return id, site is not None
 
 
-def get_all_sites() -> list:
-    conn = db.connect_to_db()
+def get_all_sites(dsn: str) -> list:
+    conn = db.connect_to_db(dsn)
     sites = db.get_all_sites(conn)
     db.close_connection(conn)
     log.debug(f'Данные о сайтах получены: {sites}')
     return sites
 
 
-def check_site(id: int) -> Any:
-    conn = db.connect_to_db()
+def check_site(id: int, dsn: str) -> Any:
+    conn = db.connect_to_db(dsn)
     site = db.get_site_by_id(id, conn)
     log.debug(f'Данные сайта - {site}')
     if site:
@@ -71,8 +71,8 @@ def get_check_data(response: Response) -> dict:
     return check_data
 
 
-def get_site_and_checks(id: int) -> tuple:
-    conn = db.connect_to_db()
+def get_site_and_checks(id: int, dsn: str) -> tuple:
+    conn = db.connect_to_db(dsn)
     site = db.get_site_by_id(id, conn)
     log.debug(f'Данные сайта - {site}')
     checks = db.get_checks(id, conn)
