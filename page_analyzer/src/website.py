@@ -1,12 +1,13 @@
 import logging
 import urllib.parse
-import validators
-import page_analyzer.constants as const
-from requests import get
 from typing import Any
-from requests import Response
-from . import db
+
+import page_analyzer.constants as const
+import validators
+from requests import Response, get
+
 from ..src import parser
+from . import db
 
 log = logging.getLogger(__name__)
 
