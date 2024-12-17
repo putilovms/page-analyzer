@@ -5,6 +5,7 @@ from .src import website
 from requests import RequestException
 from dotenv import load_dotenv
 
+
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')

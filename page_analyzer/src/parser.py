@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import page_analyzer.constants as const
 
-
 def parsing_site(content: str) -> dict:
     bs = BeautifulSoup(content)
     result = {}

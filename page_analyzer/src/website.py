@@ -10,7 +10,6 @@ import page_analyzer.constants as const
 
 log = logging.getLogger(__name__)
 
-
 def validate(site_name: str) -> str | None:
     if len(site_name) > 255:
         return 'URL превышает 255 символов'
