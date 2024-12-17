@@ -25,3 +25,4 @@ Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https:/
     * `DATABASE_URL` - access to the PostgreSQL database
 4. Build the project using the command: `>> make build`
 5. Starting the server: `>> make start`
+6. 
