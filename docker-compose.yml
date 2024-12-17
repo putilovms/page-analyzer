@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+
+  page_analyzer:
+    build: .
+    restart: always
+    ports:
+      - '8080:8000'
+    depends_on:
+      - postgres
+    command: make start
+    environment:
+      SECRET_KEY: 6145b9d2dfdb07f738527e1844616a14
+      DATABASE_URL: postgresql://user:password@postgres:5432/page_analyzer
+
+  postgres:
+    image: postgres:16.6
+    restart: always
+    environment:
+      POSTGRES_DB: page_analyzer
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./init_db:/docker-entrypoint-initdb.d
