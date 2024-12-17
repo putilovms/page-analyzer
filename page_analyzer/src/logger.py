@@ -1,5 +1,5 @@
-import logging.config
 import logging
+import logging.config
 
 CUSTOM_TIME_FORMAT = '%H:%M'
 LOG_FILENAME = "page_analyzer.log"

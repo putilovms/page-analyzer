@@ -1,14 +1,15 @@
 import logging
 import urllib.parse
 import validators
+import page_analyzer.constants as const
 from requests import get
 from typing import Any
 from requests import Response
 from . import db
 from ..src import parser
-import page_analyzer.constants as const
 
 log = logging.getLogger(__name__)
+
 
 def validate(site_name: str) -> str | None:
     if len(site_name) > 255:
