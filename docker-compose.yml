@@ -10,16 +10,13 @@ services:
     depends_on:
       - postgres
     command: make start
-    environment:
-      SECRET_KEY: 6145b9d2dfdb07f738527e1844616a14
-      DATABASE_URL: postgresql://user:password@postgres:5432/page_analyzer
+    env_file:
+      - compose/env/page_analyzer.env
 
   postgres:
     image: postgres:16.6
     restart: always
-    environment:
-      POSTGRES_DB: page_analyzer
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+    env_file:
+      - compose/env/postgres.env
     volumes:
-      - ./init_db:/docker-entrypoint-initdb.d
+      - ./compose/init_db:/docker-entrypoint-initdb.d
