@@ -25,4 +25,15 @@ Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https:/
     * `DATABASE_URL` - access to the PostgreSQL database
 4. Build the project using the command: `>> make build`
 5. Starting the server: `>> make start`
-6. 
+
+## Docker Compose
+
+1. Create files for environment variables with the following contents:
+   * `/compose/env/postgres.env`
+      * `POSTGRES_DB` - database name
+      * `POSTGRES_USER` - username
+      * `POSTGRES_PASSWORD` - password
+   * `/compose/env/page_analyzer.env`
+      * `SECRET_KEY` - the secret key
+      * `DATABASE_URL` - access to the PostgreSQL database
+2. The command to launch containers `>> docker-compose up --build`
