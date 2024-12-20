@@ -19,7 +19,7 @@ Link to the project's website: [https://page-analyzer-uiqi.onrender.com](https:/
 ## Installation
 
 1. Requires Python version 3.10 or higher and Poetry
-2. Clone the project: `>> git clone https://github.com/putilovms/python-project-83.git`
+2. Clone the project: `>> git clone https://github.com/putilovms/page-analyzer.git`
 3. Create an `.env` file in the root of the project and add the following variables to it:
     * `SECRET_KEY` - the secret key
     * `DATABASE_URL` - access to the PostgreSQL database
